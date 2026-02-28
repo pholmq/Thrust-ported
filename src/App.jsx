@@ -1,121 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [scale, setScale] = useState(1);
+
+  // The original game dimensions from thrust.css and thrust.js
+  const GAME_WIDTH = 960;
+  const GAME_HEIGHT = 521;
+
+  // Calculate the scale factor to fit the window perfectly
+  const updateScale = () => {
+    const widthScale = window.innerWidth / GAME_WIDTH;
+    const heightScale = window.innerHeight / GAME_HEIGHT;
+    // Use 'Math.min' to fit the whole game without cropping, 
+    // or 'Math.max' if you want it to fill the screen (with cropping)
+    setScale(Math.min(widthScale, heightScale));
+  };
+
+  useLayoutEffect(() => {
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <style>{`
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
+          background-color: #000;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
 
-      <div className="ticks"></div>
+        .game-container {
+          width: ${GAME_WIDTH}px;
+          height: ${GAME_HEIGHT}px;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        iframe {
+          width: ${GAME_WIDTH}px;
+          height: ${GAME_HEIGHT}px;
+          border: none;
+          transform: scale(${scale});
+          transform-origin: center center;
+          image-rendering: pixelated; /* Keeps the retro look sharp */
+        }
+      `}</style>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <div className="game-container">
+        <iframe
+          src="/thrust/index.html"
+          title="Thrust Legacy"
+          scrolling="no"
+        />
+      </div>
     </>
-  )
+  );
 }
-
-export default App
