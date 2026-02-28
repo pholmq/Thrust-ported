@@ -1,42 +1,68 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 
 export default function App() {
-  const iframeRef = useRef(null);
+  const [scale, setScale] = useState(1);
 
-  // Proactive integration: If you need to interface with the game later
-  // (e.g., tracking high scores in a React Context), you can attach a 
-  // window.postMessage listener here without touching the legacy code.
-  useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data?.type === 'THRUST_EVENT') {
-        console.log('Event from legacy game:', event.data.payload);
-      }
-    };
-    
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+  // The original game dimensions from thrust.css and thrust.js
+  const GAME_WIDTH = 960;
+  const GAME_HEIGHT = 521;
+
+  // Calculate the scale factor to fit the window perfectly
+  const updateScale = () => {
+    const widthScale = window.innerWidth / GAME_WIDTH;
+    const heightScale = window.innerHeight / GAME_HEIGHT;
+    // Use 'Math.min' to fit the whole game without cropping, 
+    // or 'Math.max' if you want it to fill the screen (with cropping)
+    setScale(Math.min(widthScale, heightScale));
+  };
+
+  useLayoutEffect(() => {
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
   }, []);
 
   return (
-    <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      backgroundColor: '#000', 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center' 
-    }}>
-      <iframe
-        ref={iframeRef}
-        src="/thrust/index.html"
-        style={{ 
-          width: '960px', 
-          height: '500px', 
-          border: 'none',
-          overflow: 'hidden'
-        }}
-        title="Thrust Classic"
-      />
-    </div>
+    <>
+      <style>{`
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
+          background-color: #000;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .game-container {
+          width: ${GAME_WIDTH}px;
+          height: ${GAME_HEIGHT}px;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        iframe {
+          width: ${GAME_WIDTH}px;
+          height: ${GAME_HEIGHT}px;
+          border: none;
+          transform: scale(${scale});
+          transform-origin: center center;
+          image-rendering: pixelated; /* Keeps the retro look sharp */
+        }
+      `}</style>
+
+      <div className="game-container">
+        <iframe
+          src="/thrust/index.html"
+          title="Thrust Legacy"
+          scrolling="no"
+        />
+      </div>
+    </>
   );
 }
