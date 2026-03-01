@@ -4,8 +4,12 @@ function Sound() {
   this.iVolume = 50;
   this.bMute = false;
   this.bThrust = false;
+  this.bMusic = true;
 
   this.Init = function () {
+    var savedMusic = $.Jookie.Get("thrust", "bMusic");
+    this.bMusic = savedMusic !== false;
+
     this.oSounds.Countdown = new Audio("./sounds/countdown.mp3");
     this.oSounds.EnemyBullet = new Audio("./sounds/enemy_bullet.mp3");
     this.oSounds.Explosion = new Audio("./sounds/explosion.mp3");
@@ -15,9 +19,42 @@ function Sound() {
     this.oSounds.Shield = new Audio("./sounds/shield.mp3");
     this.oSounds.ShipBullet = new Audio("./sounds/ship_bullet.mp3");
     this.oSounds.Thrust = new Audio("./sounds/thrust.mp3");
+    this.oSounds.Music = new Audio("./sounds/thrust_theme.mp3"); 
 
     this.oSounds.Shield.loop = true;
     this.oSounds.Thrust.loop = true;
+    this.oSounds.Music.loop = true;
+
+    if (this.bMusic) {
+      var playPromise = this.oSounds.Music.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          var startMusic = () => {
+            if (this.bMusic && this.oSounds.Music.paused) {
+              this.oSounds.Music.play();
+            }
+            document.removeEventListener("keydown", startMusic);
+          };
+          document.addEventListener("keydown", startMusic);
+        });
+      }
+    }
+  };
+
+  this.ToggleMusic = function () {
+    this.bMusic = !this.bMusic;
+    var oElem = $("#music_toggle");
+    
+    if (this.bMusic) {
+      this.oSounds.Music.play();
+      oElem.removeClass("muted");
+    } else {
+      this.oSounds.Music.pause();
+      oElem.addClass("muted");
+    }
+    
+    $.Jookie.Set("thrust", "bMusic", this.bMusic);
+    $("#thrust_arena").focus();
   };
 
   this.Play = function (sSound) {
@@ -75,40 +112,25 @@ function Sound() {
   };
 
   this.Volume = function (value) {
-    // change and sanitize volume level
     this.iVolume = Math.max(0, Math.min(value, 100));
 
-    // stop any looping sounds or user will think the volume control doesn't work
     this.oSounds["Thrust"].pause();
     this.oSounds["Thrust"].currentTime = 0;
     this.oSounds["Shield"].pause();
     this.oSounds["Shield"].currentTime = 0;
 
-    // update actual volume
+    // Applies the master volume dynamically to ALL sounds, including "Music"
     Object.values(this.oSounds).forEach(
       (value) => (value.volume = this.iVolume / 100)
     );
 
-    // update display
     var iX = 0;
     var iY = -24;
     switch (this.iVolume) {
-      case 10:
-      case 60:
-        iX = -48;
-        break;
-      case 20:
-      case 70:
-        iX = -96;
-        break;
-      case 30:
-      case 80:
-        iX = -144;
-        break;
-      case 40:
-      case 90:
-        iX = -192;
-        break;
+      case 10: case 60: iX = -48; break;
+      case 20: case 70: iX = -96; break;
+      case 30: case 80: iX = -144; break;
+      case 40: case 90: iX = -192; break;
     }
     if (this.iVolume >= 50) {
       iY = -36;
@@ -117,17 +139,14 @@ function Sound() {
       }
     }
 
-    // update ui
     $("#volume").css("background-position", `${iX}px ${iY}px`);
     $("#thrust_arena").focus();
 
-    // if muted, unmute
     if (this.bMute == true) {
       $("div.mute_on").removeClass("mute_on").addClass("mute_off");
       this.bMute = false;
     }
 
-    // save cookie
     $.Jookie.Set("thrust", "iVol", this.iVolume);
   };
 
@@ -140,11 +159,17 @@ function Sound() {
   };
 }
 
+$.Jookie.Initialise("thrust", 525600);
+
 var oSound = new Sound();
 oSound.Init();
-$.Jookie.Initialise("thrust", 525600);
 oSound.Volume($.Jookie.Get("thrust", "iVol") || 50);
+
 var bMute = $.Jookie.Get("thrust", "bMute") || false;
 if (bMute == true) {
   oSound.ToggleMute($("div.mute_off"));
+}
+
+if (oSound.bMusic === false) {
+  $("#music_toggle").addClass("muted");
 }
