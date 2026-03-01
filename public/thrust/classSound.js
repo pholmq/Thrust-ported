@@ -24,20 +24,14 @@ function Sound() {
     this.oSounds.Shield.loop = true;
     this.oSounds.Thrust.loop = true;
     this.oSounds.Music.loop = true;
+    
+    // We no longer attempt to auto-play here.
+  };
 
-    if (this.bMusic) {
-      var playPromise = this.oSounds.Music.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          var startMusic = () => {
-            if (this.bMusic && this.oSounds.Music.paused) {
-              this.oSounds.Music.play();
-            }
-            document.removeEventListener("keydown", startMusic);
-          };
-          document.addEventListener("keydown", startMusic);
-        });
-      }
+  // NEW: Clean function to start the music when the game begins
+  this.StartMusic = function() {
+    if (this.bMusic && this.oSounds.Music.paused) {
+      this.oSounds.Music.play().catch(err => console.error("Audio blocked:", err));
     }
   };
 
@@ -119,7 +113,6 @@ function Sound() {
     this.oSounds["Shield"].pause();
     this.oSounds["Shield"].currentTime = 0;
 
-    // Applies the master volume dynamically to ALL sounds, including "Music"
     Object.values(this.oSounds).forEach(
       (value) => (value.volume = this.iVolume / 100)
     );

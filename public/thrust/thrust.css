@@ -1,3 +1,11 @@
+/* Reset default browser margins inside the iframe */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    overflow: hidden;
+  }
+
 /* thrust */
 #thrust { background: #000; height: 521px; position: relative;  }
 div.thrust_level { background: #000 url(./images/bg.gif) no-repeat 0 0; height: 51px; overflow: hidden; }
@@ -29,19 +37,19 @@ div.volume_up:hover { background: #000 url(./images/volume.gif) no-repeat -204px
 
 #music_toggle {
     position: absolute;
-    top: -21px;  /* Adjusted for larger size */
-    right: 35px;
-    width: 24px; /* Doubled size */
+    top: -21px;  
+    right: 20px; /* Decreased from 35px to push it further right */
+    width: 24px; 
     height: 24px; 
     border-radius: 50%;
     border: 2px solid #0f0;
-    color: #0f0; /* Note color */
+    color: #0f0; 
     font-family: Arial, sans-serif;
-    font-size: 16px; /* Note size */
-    line-height: 20px; /* Centers the note vertically */
-    text-align: center; /* Centers the note horizontally */
+    font-size: 16px; 
+    line-height: 20px; 
+    text-align: center; 
     box-sizing: border-box;
-    background-color: #000; /* Solid background to block elements behind it */
+    background-color: #000; 
     cursor: pointer;
     z-index: 100;
   }
@@ -54,7 +62,7 @@ div.volume_up:hover { background: #000 url(./images/volume.gif) no-repeat -204px
   #music_toggle.muted::after {
     content: '';
     position: absolute;
-    top: 9px; /* Centered diagonally for the 24px box */
+    top: 9px; 
     left: -2px;
     width: 24px;
     height: 2px;
