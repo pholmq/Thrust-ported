@@ -1166,7 +1166,8 @@ function KeySelect() {
                 "#ff0000      pause / unpause: #ffff00" + oGameSettings.sPause + "\n" +
                 "#ff0000            quit game: #ffff00" + oGameSettings.sQuit + "\n\n" +
                 "#ff00fforiginal game copyright jeremy c smith 1986\n" +
-                "#00ff00recreated in javascript by jon combe 24 years later\n\n" +
+                "#00ff00recreated in javascript by jon combe 24 years later\n" +
+                "#ff0000 the epic c64 score added 2026 by patrik holmqvist\n" +
                 "#ffffffpress the space bar to start / press c to cheat\n" +
                 "#888888press escape to change keys\n\n" +
                 "#00ffff" + sThanks.substr(iKeySelectPos, 52));
