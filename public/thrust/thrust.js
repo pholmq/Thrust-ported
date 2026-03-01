@@ -727,40 +727,43 @@ $(document).ready(function() {
 });
 
 function BindStartGameKey() {
-    $(document).unbind().bind("keydown", function(e) {
-        var iKeyCode = (e.charCode || e.keyCode);
-        switch (iKeyCode) {
-            case 27:
-                clearTimeout(iPauseTimer);
-                clearTimeout(iKeySelectAnim);
-                $(document).unbind();
-                iEditKeyPos = 0;
-                sState = "DoNothing";
-                EditKeys();
-                break;
-            case 32:
-            case 67:
-                e.preventDefault();
-                clearTimeout(iPauseTimer);
-                clearTimeout(iKeySelectAnim);
-                $(document).unbind();
-                if (iKeyCode == 32) {
-                    bTracers = false;
-                    bUnlimitedFuel = false;
-                    bUnlimitedLives = false;
-                    $("#thrust_cheat").slideUp();
-                } else {
-                    bTracers = $("#thrust_tracers").attr("checked");
-                    bUnlimitedFuel = $("#thrust_unlimfuel").attr("checked");
-                    bUnlimitedLives = $("#thrust_unlimlives").attr("checked");
-                    $("#thrust_cheat").slideDown();
-                }
-                sState = "StartNewGame";
-                break;
-        }
-    });
+  $(document).unbind().bind("keydown", function(e) {
+      var iKeyCode = (e.charCode || e.keyCode);
+      switch (iKeyCode) {
+          case 27:
+              clearTimeout(iPauseTimer);
+              clearTimeout(iKeySelectAnim);
+              $(document).unbind();
+              iEditKeyPos = 0;
+              sState = "DoNothing";
+              EditKeys();
+              break;
+          case 32:
+          case 67:
+              e.preventDefault();
+              clearTimeout(iPauseTimer);
+              clearTimeout(iKeySelectAnim);
+              $(document).unbind();
+              if (iKeyCode == 32) {
+                  bTracers = false;
+                  bUnlimitedFuel = false;
+                  bUnlimitedLives = false;
+                  $("#thrust_cheat").slideUp();
+              } else {
+                  bTracers = $("#thrust_tracers").attr("checked");
+                  bUnlimitedFuel = $("#thrust_unlimfuel").attr("checked");
+                  bUnlimitedLives = $("#thrust_unlimlives").attr("checked");
+                  $("#thrust_cheat").slideDown();
+              }
+              
+              // --- START THE MUSIC HERE ---
+              oSound.StartMusic(); 
+              
+              sState = "StartNewGame";
+              break;
+      }
+  });
 }
-
 function CalculatePoint(iAngle, iRadius) {
   iAngle = DegreesToRadians(iAngle);
   return { iX: (Math.cos(iAngle) * iRadius), iY: (Math.sin(iAngle) * iRadius) };
