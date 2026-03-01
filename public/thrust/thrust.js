@@ -732,7 +732,9 @@ function BindStartGameKey() {
       switch (iKeyCode) {
           case 27:
               clearTimeout(iPauseTimer);
-              clearTimeout(iKeySelectAnim);
+              // Safely stop the animation without touching timeouts
+              if (window.cancelAnimationFrame) cancelAnimationFrame(iKeySelectAnim);
+              KeySelect.initialized = false; 
               $(document).unbind();
               iEditKeyPos = 0;
               sState = "DoNothing";
@@ -742,8 +744,12 @@ function BindStartGameKey() {
           case 67:
               e.preventDefault();
               clearTimeout(iPauseTimer);
-              clearTimeout(iKeySelectAnim);
+              
+              // Safely stop the animation without touching timeouts
+              if (window.cancelAnimationFrame) cancelAnimationFrame(iKeySelectAnim);
+              KeySelect.initialized = false; 
               $(document).unbind();
+              
               if (iKeyCode == 32) {
                   bTracers = false;
                   bUnlimitedFuel = false;
@@ -756,14 +762,21 @@ function BindStartGameKey() {
                   $("#thrust_cheat").slideDown();
               }
               
-              // --- START THE MUSIC HERE ---
-              oSound.StartMusic(); 
+              try {
+                  if (typeof oSound !== 'undefined' && typeof oSound.StartMusic === 'function') {
+                      oSound.StartMusic(); 
+                  }
+              } catch (err) {
+                  console.error("Audio blocked: ", err);
+              }
               
+              // State transitions to StartNewGame, and the main loop will now successfully catch it!
               sState = "StartNewGame";
               break;
       }
   });
 }
+
 function CalculatePoint(iAngle, iRadius) {
   iAngle = DegreesToRadians(iAngle);
   return { iX: (Math.cos(iAngle) * iRadius), iY: (Math.sin(iAngle) * iRadius) };
@@ -1158,30 +1171,55 @@ function InitCookie() {
 }
 
 function KeySelect() {
-  clearTimeout(iKeySelectAnim);
+  // Safely clear previous frames without killing the main iTimer game loop
+  if (window.cancelAnimationFrame) cancelAnimationFrame(iKeySelectAnim);
 
-  var sThanks = "                                                    with thanks to chris carline, lee johnson, alex cranstone, anne peattie, ammon torrence and my long suffering missus                                                      ";
-  ShowMessage("\n#ff0000          rotate left: #ffff00" + oGameSettings.sCCW + "\n" +
-                "#ff0000         rotate right: #ffff00" + oGameSettings.sCW + "\n" +
-                "#ff0000                 fire: #ffff00" + oGameSettings.sFire + "\n" +
-                "#ff0000               thrust: #ffff00" + oGameSettings.sThrust + "\n" +
-                "#ff0000shield / tractor beam: #ffff00" + oGameSettings.sShield + "\n" +
-                "#ff0000      pause / unpause: #ffff00" + oGameSettings.sPause + "\n" +
-                "#ff0000            quit game: #ffff00" + oGameSettings.sQuit + "\n\n" +
-                "#ff00fforiginal game copyright jeremy c smith 1986\n" +
-                "#00ff00recreated in javascript by jon combe 24 years later\n" +
-                "#ff0000 the epic c64 score added 2026 by patrik holmqvist\n" +
-                "#ffffffpress the space bar to start / press c to cheat\n" +
-                "#888888press escape to change keys\n\n" +
-                "#00ffff" + sThanks.substr(iKeySelectPos, 52));
+  if (!KeySelect.initialized) {
+      KeySelect.initialized = true;
+      iKeySelectPos = oGame.oArena.iViewportWidth || 960;
+      BindStartGameKey(); 
+  }
 
-  BindStartGameKey();
-  iKeySelectPos++;
-  if (iKeySelectPos > 168) {
+  var sThanks = "#00ffffwith thanks to chris carline, lee johnson, alex cranstone, anne peattie, ammon torrence and my long suffering missus";
+
+  var cleanStr = sThanks.replace(/\#[0-9a-fA-f]{6}/g, "");
+  var iScrollWidth = (cleanStr.length * TEXT_WIDTH) + ((cleanStr.length - 1) * TEXT_SPACING);
+
+  var sMessage = "\n#ff0000          rotate left: #ffff00" + oGameSettings.sCCW + "\n" +
+        "#ff0000         rotate right: #ffff00" + oGameSettings.sCW + "\n" +
+        "#ff0000                 fire: #ffff00" + oGameSettings.sFire + "\n" +
+        "#ff0000               thrust: #ffff00" + oGameSettings.sThrust + "\n" +
+        "#ff0000shield / tractor beam: #ffff00" + oGameSettings.sShield + "\n" +
+        "#ff0000      pause / unpause: #ffff00" + oGameSettings.sPause + "\n" +
+        "#ff0000            quit game: #ffff00" + oGameSettings.sQuit + "\n\n" +
+        "#ff00fforiginal game copyright jeremy c smith 1986\n" +
+        "#00ff00recreated in javascript by jon combe 24 years later\n" +
+        "#ff0000 rob hubbards music added 2026 by patrik holmqvist\n" +
+        "#ffffffpress the space bar to start / press c to cheat\n" +
+        "#888888press escape to change keys\n\n" + 
+        "#00ffff"; 
+
+  oCTX.clearRect(0, 0, oGame.oArena.iViewportWidth, oGame.oArena.iViewportHeight);
+
+  var aMessage = sMessage.split("\n");
+  var iMessageHeight = ((aMessage.length - 0.5) * (TEXT_HEIGHT * LINE_SPACING));
+  var iYPos = ((oGame.oArena.iViewportHeight / 2) - (iMessageHeight / 2));
+
+  for (var i = 0; i < (aMessage.length - 1); i++) {
+    TextSentence(aMessage[i], (oGame.oArena.iViewportWidth / 2), iYPos, "center", oCTX);
+    iYPos += (TEXT_HEIGHT * LINE_SPACING);
+  }
+
+  TextSentence(sThanks, Math.floor(iKeySelectPos), iYPos, "left", oCTX);
+
+  iKeySelectPos -= 3;
+
+  if (iKeySelectPos < -(iScrollWidth + 200)) {
+    KeySelect.initialized = false; 
     iKeySelectPos = 0;
     sState = "HighScoreTable";
   } else {
-    iKeySelectAnim = setTimeout(KeySelect, 110);
+    iKeySelectAnim = requestAnimationFrame(KeySelect); 
   }
 }
 
