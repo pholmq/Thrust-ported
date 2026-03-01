@@ -7,8 +7,8 @@ function Sound() {
   this.bMusic = true;
 
   this.Init = function () {
-    var savedMusic = $.Jookie.Get("thrust", "bMusic");
-    this.bMusic = savedMusic !== false;
+    // Always default to true on page load, ignoring saved cookies
+    this.bMusic = true;
 
     this.oSounds.Countdown = new Audio("./sounds/countdown.mp3");
     this.oSounds.EnemyBullet = new Audio("./sounds/enemy_bullet.mp3");
@@ -24,12 +24,10 @@ function Sound() {
     this.oSounds.Shield.loop = true;
     this.oSounds.Thrust.loop = true;
     this.oSounds.Music.loop = true;
-    
-    // We no longer attempt to auto-play here.
   };
 
-  // NEW: Clean function to start the music when the game begins
   this.StartMusic = function() {
+    // Only play if it's toggled on and currently paused
     if (this.bMusic && this.oSounds.Music.paused) {
       this.oSounds.Music.play().catch(err => console.error("Audio blocked:", err));
     }
@@ -47,6 +45,8 @@ function Sound() {
       oElem.addClass("muted");
     }
     
+    // We still save to the cookie so the toggle works mid-game, 
+    // but it gets wiped back to 'true' on a hard page refresh.
     $.Jookie.Set("thrust", "bMusic", this.bMusic);
     $("#thrust_arena").focus();
   };
@@ -163,6 +163,5 @@ if (bMute == true) {
   oSound.ToggleMute($("div.mute_off"));
 }
 
-if (oSound.bMusic === false) {
-  $("#music_toggle").addClass("muted");
-}
+// Ensure the UI icon defaults to the "ON" state visually when the page loads
+$("#music_toggle").removeClass("muted");
