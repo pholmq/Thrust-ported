@@ -1196,7 +1196,7 @@ function KeySelect() {
         "#00ff00recreated in javascript by jon combe 24 years later\n" +
         "#ff0000 rob hubbards music added 2026 by patrik holmqvist\n" +
         "#ffffffpress the space bar to start / press c to cheat\n" +
-        "#888888press escape to change keys\n\n" + 
+        "#888888press escape to change keys\n" + 
         "#00ffff"; 
 
   oCTX.clearRect(0, 0, oGame.oArena.iViewportWidth, oGame.oArena.iViewportHeight);
